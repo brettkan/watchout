@@ -12,6 +12,7 @@
 
 var width = 700;
 var height = 450;
+var numberOfEnemies = 10;
 
 var svg = d3.select("body").append("svg")
     .attr("width", width)
@@ -24,25 +25,33 @@ var circle = d3.select("svg").append("circle")
     .attr("cx",100)
     .attr("cy",100);
 */
+
+// Function which random x-coordinate
 var randomX = function() {
   return width * Math.random();
 }
 
+// Function which creates random y-coordinate
 var randomY = function() {
   return height * Math.random();
 }
 
+// Constructor function of player class
+// with coordinates set at the middle of the board
+var Player = function() {
+  this.x = width / 2;
+  this.y = height / 2
+}
+
+// Constructor function of enemy class
+// set at random position
 var Enemy = function(leftOrRight) {
   this.x = randomX();
   this.y = randomY();
   this.moveFirst = leftOrRight;
 }
 
-var Player = function() {
-  this.x = width / 2;
-  this.y = height / 2
-}
-
+// Constructor function which creates an array of enemy objects.
 var allEnemies = function(num) {
   var enemies = [];
   for (var i = 0; i < num; i++) {
@@ -70,12 +79,8 @@ var allEnemies = function(num) {
 //   }
 // }
 
-var moveEnemies = function() {
-  d3.selectAll("circle")
-}
-
 // circleGod(10);
-var enemies = allEnemies(10);
+var enemies = allEnemies(numberOfEnemies);
 
 
 // d3.selectAll("circle")
@@ -94,7 +99,7 @@ var createBoard = function() {
     .transition()
     .duration(2000)
     .attr("opacity", 1);
-//debugger;
+
   svg.selectAll('circle.player')
     .data([new Player()])
     .enter()
@@ -118,11 +123,55 @@ var createBoard = function() {
   //transition to those x and y coordinates
 
 var moveEnemies = function() {
-  svg.selectAll('circle').data(allEnemies(10))
+
+
+  svg.selectAll('circle.enemy').data(allEnemies(numberOfEnemies))
     .transition()
     .duration(2000)
     .attr("cx", function(d) { return d.x; })
-    .attr("cy", function(d) { return d.y; });
+    .attr("cy", function(d) { return d.y; })
+    .tween(this, function(t) {
+    var i = d3.interpolateRound(0,100);
+    return function(t) {
+      // console.log("CY", this.cx.animVal.value);
+      // console.log("CX", this.cy.animVal.value);
+      if (checkCollisions(this)) {
+        //reset score
+      };
+      //console.log(i(t));
+      return i(t);
+    }
+      console.dir(this.cx.animVal.value) });
+
+}
+
+var checkCollisions = function(enemy) {
+  var playerX = svg.selectAll('circle.player')[0][0].cx.animVal.value;
+  var playerY = svg.selectAll('circle.player')[0][0].cy.animVal.value;
+
+  // console.dir(x)
+  //   .data()[0]
+  //   .x;
+  // var y = svg.selectAll('circle.player')
+  //   .data()[0]
+  //   .y;
+
+  var enemyX = enemy.cx.animVal.value;
+  var enemyY = enemy.cy.animVal.value;
+  var distanceX = enemyX - playerX;
+  var distanceY = enemyY - playerY;
+
+  var totalDistance = Math.sqrt(Math.pow(distanceX,2)+Math.pow(distanceY,2));
+  var playerRadius =  svg.selectAll('circle.player')[0][0].r.animVal.value;
+  var enemyRadius = enemy.r.animVal.value;
+  var minCollision = playerRadius + enemyRadius;
+  if(totalDistance < minCollision) {
+    return true;
+  }
+}
+
+var enemyCollision = function() {
+
 }
 
 createBoard();
