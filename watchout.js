@@ -16,7 +16,30 @@ var numberOfEnemies = 10;
 var gameObject = {
   highScore: 0,
   currentScore: 0,
-  collisions: 0
+  collisions: 0,
+  intervalID: null
+}
+var currentNode = document.getElementById("current-score");
+var collisionsNode = document.getElementById("collisions");
+var highscoreNode = document.getElementById("high-score");
+var iterateScore = function() {
+  gameObject.currentScore++;
+  currentNode.textContent = '' + gameObject.currentScore;
+}
+
+var startTimer = function() {
+  gameObject.intervalID = setInterval(iterateScore, 1);
+}
+
+var stopTimer = function() {
+  clearInterval(gameObject.intervalID);
+  if(gameObject.currentScore > gameObject.highScore) {
+    gameObject.highScore = gameObject.currentScore;
+    highscoreNode.textContent = '' + gameObject.highScore;
+  }
+  gameObject.currentScore = 0;
+  gameObject.collisions++;
+  collisionsNode.textContent = '' + gameObject.collisions;
 }
 
 var svg = d3.select("body").append("svg")
@@ -142,6 +165,8 @@ var moveEnemies = function() {
       // console.log("CX", this.cy.animVal.value);
       if (checkCollisions(this)) {
         //reset score
+        stopTimer();
+        startTimer();
       };
       //console.log(i(t));
       return i(t);
@@ -180,7 +205,7 @@ var enemyCollision = function() {
 }
 
 createBoard();
-
+setTimeout(startTimer, 2000);
 // d3.timer(moveEnemies, 3000);
 setInterval(moveEnemies, 3000);
 
