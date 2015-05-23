@@ -128,10 +128,25 @@ var createBoard = function() {
     .duration(2000)
     .attr("opacity", 1);
 
+  var drag = d3.behavior.drag()
+    .on("drag", function(d,i) {
+      console.log(d3.event);
+    d.x += d3.event.dx;
+    d.y += d3.event.dy;
+    d3.select(this).attr("cx", d.x);
+    d3.select(this).attr("cy", d.y);
+    // d3.select(this).attr("transform", function(d,i){
+    //   debugger;
+    //   return "translate(" +d.x + "px, " + d.y +"px )";
+    // })
+  });
+
+
   svg.selectAll('circle.player')
     .data([new Player()])
     .enter()
     .append("circle")
+    .call(drag)
     .attr("cx", function(d) { return d.x; })
     .attr("cy", function(d) { return d.y; })
     .attr("r", 10)
