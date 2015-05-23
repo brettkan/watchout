@@ -129,7 +129,8 @@ var moveEnemies = function() {
 
         return i(t);
       }
-};
+    });
+  };
 
 var checkCollisions = function(enemy) {
   var playerX = svg.selectAll('circle.player')[0][0].cx.animVal.value;
