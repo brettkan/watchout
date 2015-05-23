@@ -1,75 +1,58 @@
-// start slingin' some d3 here.
-
-//define svg that game takes place in
-//create the obstacles and player inside of the SVG
-  //assign object of coordinates to circle
-//figure out how to move obstacles
-//create timer to invoke the movement of the obstacles
-//check the collision in real time
-  //keep score for the amount of time player has not
-  //been in contact
-    //reset score if player is hit
-
+// Inputs
 var width = 700;
 var height = 450;
-var numberOfEnemies = 10;
+var numberOfEnemies = prompt("How many enemies do you want?", 20);
 var gameObject = {
   highScore: 0,
   currentScore: 0,
   collisions: 0,
   intervalID: null
-}
+};
+
 var currentNode = document.getElementById("current-score");
-var collisionsNode = document.getElementById("collisions");
+// var collisionsNode = document.getElementById("collisions");
 var highscoreNode = document.getElementById("high-score");
 var iterateScore = function() {
   gameObject.currentScore++;
   currentNode.textContent = '' + gameObject.currentScore;
-}
+};
 
 var startTimer = function() {
-  gameObject.intervalID = setInterval(iterateScore, 1);
-}
+  gameObject.intervalID = d3.timer(iterateScore);
+};
 
 var stopTimer = function() {
-  clearInterval(gameObject.intervalID);
   if(gameObject.currentScore > gameObject.highScore) {
     gameObject.highScore = gameObject.currentScore;
     highscoreNode.textContent = '' + gameObject.highScore;
   }
   gameObject.currentScore = 0;
   gameObject.collisions++;
-  collisionsNode.textContent = '' + gameObject.collisions;
-}
+  // collisionsNode.textContent = '' + gameObject.collisions;
+};
 
 var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height)
     .attr("border-width", "2px")
     .attr("border-style", "solid");
-/*
-var circle = d3.select("svg").append("circle")
-    .attr("r",10)
-    .attr("cx",100)
-    .attr("cy",100);
-*/
 
 // Function which random x-coordinate
 var randomX = function() {
   return width * Math.random();
-}
+};
 
 // Function which creates random y-coordinate
 var randomY = function() {
   return height * Math.random();
-}
+};
 
 // Constructor function of player class
 // with coordinates set at the middle of the board
 var Player = function() {
   this.x = width / 2;
   this.y = height / 2
-}
+};
 
 // Constructor function of enemy class
 // set at random position
@@ -77,7 +60,7 @@ var Enemy = function(leftOrRight) {
   this.x = randomX();
   this.y = randomY();
   this.moveFirst = leftOrRight;
-}
+};
 
 // Constructor function which creates an array of enemy objects.
 var allEnemies = function(num) {
@@ -88,35 +71,9 @@ var allEnemies = function(num) {
   return enemies;
 };
 
-// var createCircle = function(x, y) {
-//   var circle = d3.select("svg").append("circle")
-//     .attr("r",10)
-//     .attr("cx",x)
-//     .attr("cy",y)
-//     .attr("opacity", 0)
-//     .transition()
-//     .duration(2000)
-//     .attr("opacity", 1);
-
-// }
-
-//function that generates all circles
-// var circleGod = function(n) {
-//   for (var i = 0; i < n; i++) {
-//     createCircle(randomX(), randomY());
-//   }
-// }
-
-// circleGod(10);
-var enemies = allEnemies(numberOfEnemies);
-
-
-// d3.selectAll("circle")
-//   .data(enemies);
-
 var createBoard = function() {
   svg.selectAll('circle.enemy')
-    .data(enemies)
+    .data(allEnemies(numberOfEnemies))
     .enter()
     .append("circle")
     .attr("cx", function(d) { return d.x; })
@@ -131,15 +88,11 @@ var createBoard = function() {
   var drag = d3.behavior.drag()
     .on("drag", function(d,i) {
       console.log(d3.event);
-    d.x += d3.event.dx;
-    d.y += d3.event.dy;
-    d3.select(this).attr("cx", d.x);
-    d3.select(this).attr("cy", d.y);
-    // d3.select(this).attr("transform", function(d,i){
-    //   debugger;
-    //   return "translate(" +d.x + "px, " + d.y +"px )";
-    // })
-  });
+      d.x += d3.event.dx;
+      d.y += d3.event.dy;
+      d3.select(this).attr("cx", d.x);
+      d3.select(this).attr("cy", d.y);
+    });
 
 
   svg.selectAll('circle.player')
@@ -156,17 +109,10 @@ var createBoard = function() {
     .transition()
     .duration(2000)
     .attr("opacity", 1);
-}
+};
 
-
-//function
-  //after waiting a defined interval of time
-  //randomly choose new x and y coordinates for each circle
-  //
-  //transition to those x and y coordinates
 
 var moveEnemies = function() {
-
 
   svg.selectAll('circle.enemy').data(allEnemies(numberOfEnemies))
     .transition()
@@ -174,32 +120,20 @@ var moveEnemies = function() {
     .attr("cx", function(d) { return d.x; })
     .attr("cy", function(d) { return d.y; })
     .tween(this, function(t) {
-    var i = d3.interpolateRound(0,100);
-    return function(t) {
-      // console.log("CY", this.cx.animVal.value);
-      // console.log("CX", this.cy.animVal.value);
-      if (checkCollisions(this)) {
-        //reset score
-        stopTimer();
-        startTimer();
-      };
-      //console.log(i(t));
-      return i(t);
-    }
-      console.dir(this.cx.animVal.value) });
+      var i = d3.interpolateRound(0,50);
+      return function(t) {
 
-}
+        if (checkCollisions(this)) {
+          stopTimer();
+        };
+
+        return i(t);
+      }
+};
 
 var checkCollisions = function(enemy) {
   var playerX = svg.selectAll('circle.player')[0][0].cx.animVal.value;
   var playerY = svg.selectAll('circle.player')[0][0].cy.animVal.value;
-
-  // console.dir(x)
-  //   .data()[0]
-  //   .x;
-  // var y = svg.selectAll('circle.player')
-  //   .data()[0]
-  //   .y;
 
   var enemyX = enemy.cx.animVal.value;
   var enemyY = enemy.cy.animVal.value;
@@ -213,16 +147,12 @@ var checkCollisions = function(enemy) {
   if(totalDistance < minCollision) {
     return true;
   }
-}
-
-var enemyCollision = function() {
-
-}
+};
 
 createBoard();
 setTimeout(startTimer, 2000);
 // d3.timer(moveEnemies, 3000);
-setInterval(moveEnemies, 3000);
+setInterval(moveEnemies, 2000);
 
 
 
