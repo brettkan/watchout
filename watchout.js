@@ -13,6 +13,11 @@
 var width = 700;
 var height = 450;
 var numberOfEnemies = 10;
+var gameObject = {
+  highScore: 0,
+  currentScore: 0,
+  collisions: 0
+}
 
 var svg = d3.select("body").append("svg")
     .attr("width", width)
